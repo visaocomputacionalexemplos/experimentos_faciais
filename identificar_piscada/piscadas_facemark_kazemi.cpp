@@ -5,7 +5,7 @@ using namespace cv::face;
 
 Ptr<Facemark> initFacemarkKazemi() {
     Ptr<Facemark> facemark = FacemarkKazemi::create();
-    //facemark->loadModel("../../extra/lbfmodel.yaml");
+    facemark->loadModel("../../extra/kazemi_model.dat");
 
     return facemark;
 }
