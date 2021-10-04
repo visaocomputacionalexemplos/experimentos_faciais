@@ -5,7 +5,7 @@ using namespace cv::face;
 
 Ptr<Facemark> initFacemarkLBF() {
     Ptr<Facemark> facemark = FacemarkLBF::create();
-    facemark->loadModel("../extra/lbfmodel.yaml");
+    facemark->loadModel("../../extra/lbfmodel.yaml");
 
     return facemark;
 }
