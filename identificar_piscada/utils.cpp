@@ -110,12 +110,32 @@ void tracejarRegiaoInteresse(Mat img, const vector<vector<Point2f>> &pontosFacia
 void escreverDimensoesOlhos(cv::Mat img, const cv::Rect &rostoDetectado, const olhoDimencoes &olhoEsquerdo, const olhoDimencoes &olhoDireito)
 {
     std::stringstream texto;
-    texto << "E: " << std::setprecision(3) << olhoEsquerdo.proporcao <<
-        " D:" << std::setprecision(3) <<  olhoDireito.proporcao;
+    texto << "E: " << std::setprecision(2) << olhoEsquerdo.proporcao;
 
     cv::putText(img,
-            texto.str(),
-            cv::Point(rostoDetectado.x, rostoDetectado.y - 10), 
-            cv::FONT_HERSHEY_DUPLEX, 0.7,
-            cv::Scalar(0,0,0), 1);
+                texto.str(),
+                cv::Point(rostoDetectado.x, rostoDetectado.y - 10),
+                cv::FONT_HERSHEY_DUPLEX, 0.7,
+                cv::Scalar(0, 0, 0), 1);
+
+    texto.clear();
+    texto.str("");
+    texto << " D:" << std::setprecision(2) << olhoDireito.proporcao;
+    cv::putText(img,
+                texto.str(),
+                cv::Point(rostoDetectado.x + 100, rostoDetectado.y - 10),
+                cv::FONT_HERSHEY_DUPLEX, 0.7,
+                cv::Scalar(0, 0, 0), 1);
+}
+
+void escreverQtdPiscadas(cv::Mat img, const int &piscadas)
+{
+    std::stringstream texto;
+    texto << "Piscadas: " << piscadas;
+
+    cv::putText(img,
+                texto.str(),
+                cv::Point(10, 20),
+                cv::FONT_HERSHEY_DUPLEX, 0.7,
+                cv::Scalar(0, 0, 0), 1);
 }
