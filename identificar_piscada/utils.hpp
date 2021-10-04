@@ -18,5 +18,6 @@ void demarcarPontosFaciais(cv::Mat img, const std::vector<cv::Rect> &rostosDetec
 void demarcarContornoOlhos(cv::Mat img, const std::vector<std::vector<cv::Point2f>> &pontosFaciais);
 void tracejarRegiaoInteresse(cv::Mat img, const std::vector<std::vector<cv::Point2f>> &pontosFaciais);
 void escreverDimensoesOlhos(cv::Mat img, const cv::Rect &rostoDetectado, const olhoDimencoes &olhoEsquerdo, const olhoDimencoes &olhoDireito);
+void escreverQtdPiscadas(cv::Mat img, const int &piscadas);
 
 #endif //UTILS_H

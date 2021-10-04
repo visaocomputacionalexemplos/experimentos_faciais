@@ -3,21 +3,16 @@
 //FacemarkLBF: http://www.jiansun.org/papers/CVPR14_FaceAlignment.pdf
 
 #include <opencv2/opencv.hpp>
-#include <opencv2/dnn/dnn.hpp>
-#include "opencv2/face.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/objdetect.hpp"
 #include <iostream>
 
 #include "utils.hpp"
 #include "detectar_rosto.hpp"
 #include "piscadas_facemark_lbf.hpp"
+#include "piscadas_facemark_aam.hpp"
+#include "piscadas_facemark_kazemi.hpp"
 
 using namespace cv;
 using namespace std;
-using namespace ml;
 using namespace cv::face;
 
 Ptr<Facemark> facemark;
@@ -32,6 +27,8 @@ int main()
 
     //Inicia marcados de pontos faciais
     facemark = initFacemarkLBF();
+    facemark = initFacemarkAAM();
+    facemark = initFacemarkKazemi();
 
     VideoCapture cap(0);
     if (!cap.isOpened())
@@ -62,15 +59,16 @@ int main()
     }
 }
 
-const auto liminarOlhoFechado = 0.20;
+const auto liminarOlhoFechado = 0.18;
+bool olhoEsquerdoAberto = false, olhoDireitoAberto = false;
+int piscadas = 0;
+
 void processar(Mat imagemOriginal)
 {
     olhoDimencoes olhoEsquerdoDimencoes, olhoDireitoDimencoes;
     vector<Rect> rostosDetectados;
     vector<vector<Point2f>> pontosFaciais;
     Mat imagemComPontosFaciais;
-    bool olhoEsquerdoAberto = false, olhoDireitoAberto = false;
-    int piscadas = 0;
 
     //Chama funcao que detecta os rostos
     faceDetector->detectMultiScale(imagemOriginal, rostosDetectados);
@@ -98,12 +96,16 @@ void processar(Mat imagemOriginal)
                 escreverDimensoesOlhos(imagemOriginal, rostosDetectados[i], olhoEsquerdoDimencoes, olhoDireitoDimencoes);
 
                 //Olho direito esta aberto?
-                if (olhoEsquerdoDimencoes.proporcao > liminarOlhoFechado) {
+                if (olhoEsquerdoDimencoes.proporcao > liminarOlhoFechado)
+                {
                     //Registra que olho esta aberto
                     olhoEsquerdoAberto = true;
-                } else  {
+                }
+                else
+                {
                     //Verifica se último registro é de olho aberto
-                    if (olhoEsquerdoAberto) {
+                    if (olhoEsquerdoAberto)
+                    {
                         //Se for contabiliza piscada
                         piscadas++;
                     }
@@ -111,12 +113,16 @@ void processar(Mat imagemOriginal)
                 }
 
                 //Olho direito esta aberto?
-                if (olhoDireitoDimencoes.proporcao > liminarOlhoFechado) {
+                if (olhoDireitoDimencoes.proporcao > liminarOlhoFechado)
+                {
                     //Registra que olho esta aberto
                     olhoDireitoAberto = true;
-                } else  {
+                }
+                else
+                {
                     //Verifica se último registro é de olho aberto
-                    if (olhoDireitoAberto) {
+                    if (olhoDireitoAberto)
+                    {
                         //Se for contabiliza piscada
                         piscadas++;
                     }
@@ -128,8 +134,6 @@ void processar(Mat imagemOriginal)
         imshow("Pontos faciais", imagemComPontosFaciais);
         waitKey(5);
     }
-    else
-    {
-        cout << "Nenhum rosto detectado." << endl;
-    }
+
+    escreverQtdPiscadas(imagemOriginal, piscadas);
 }
