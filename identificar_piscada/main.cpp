@@ -11,8 +11,9 @@
 #include "opencv2/objdetect.hpp"
 #include <iostream>
 
-#include "piscadas_facemark_lbf.hpp"
+#include "utils.hpp"
 #include "detectar_rosto.hpp"
+#include "piscadas_facemark_lbf.hpp"
 
 using namespace cv;
 using namespace std;
@@ -23,9 +24,6 @@ Ptr<Facemark> facemark;
 Ptr<CascadeClassifier> faceDetector;
 
 void processar(Mat img);
-void demarcarRostoDetectado(Mat img, const Rect &regiao);
-void demarcarPontosFaciais(Mat img, const vector<Rect> &rostosDetectados, const vector<vector<Point2f>> &pontosFaciais);
-void demarcarContornoOlhos(Mat img, const vector<vector<Point2f>> &pontosFaciais);
 
 int main()
 {
@@ -64,18 +62,22 @@ int main()
     }
 }
 
+const auto liminarOlhoFechado = 0.20;
 void processar(Mat imagemOriginal)
 {
+    olhoDimencoes olhoEsquerdoDimencoes, olhoDireitoDimencoes;
     vector<Rect> rostosDetectados;
     vector<vector<Point2f>> pontosFaciais;
-    Mat rostoComPontosFaciais;
+    Mat imagemComPontosFaciais;
+    bool olhoEsquerdoAberto = false, olhoDireitoAberto = false;
+    int piscadas = 0;
 
     //Chama funcao que detecta os rostos
     faceDetector->detectMultiScale(imagemOriginal, rostosDetectados);
 
     if (rostosDetectados.size() != 0)
     {
-        rostoComPontosFaciais = imagemOriginal.clone();
+        imagemComPontosFaciais = imagemOriginal.clone();
 
         for (auto &&rostoDetec : rostosDetectados)
         {
@@ -85,53 +87,49 @@ void processar(Mat imagemOriginal)
         //Detecta os pontos faciais
         if (facemark->fit(imagemOriginal, rostosDetectados, pontosFaciais))
         {
-            demarcarPontosFaciais(rostoComPontosFaciais, rostosDetectados, pontosFaciais);
+            demarcarPontosFaciais(imagemComPontosFaciais, rostosDetectados, pontosFaciais);
+            tracejarRegiaoInteresse(imagemComPontosFaciais, pontosFaciais);
             demarcarContornoOlhos(imagemOriginal, pontosFaciais);
+
+            for (unsigned long i = 0; i < rostosDetectados.size(); i++)
+            {
+                //Coleta as dimensões(largura, altura e proporção) dos olhos
+                std::tie(olhoEsquerdoDimencoes, olhoDireitoDimencoes) = coletarDimensoesOlhos(pontosFaciais[i]);
+                escreverDimensoesOlhos(imagemOriginal, rostosDetectados[i], olhoEsquerdoDimencoes, olhoDireitoDimencoes);
+
+                //Olho direito esta aberto?
+                if (olhoEsquerdoDimencoes.proporcao > liminarOlhoFechado) {
+                    //Registra que olho esta aberto
+                    olhoEsquerdoAberto = true;
+                } else  {
+                    //Verifica se último registro é de olho aberto
+                    if (olhoEsquerdoAberto) {
+                        //Se for contabiliza piscada
+                        piscadas++;
+                    }
+                    olhoEsquerdoAberto = false;
+                }
+
+                //Olho direito esta aberto?
+                if (olhoDireitoDimencoes.proporcao > liminarOlhoFechado) {
+                    //Registra que olho esta aberto
+                    olhoDireitoAberto = true;
+                } else  {
+                    //Verifica se último registro é de olho aberto
+                    if (olhoDireitoAberto) {
+                        //Se for contabiliza piscada
+                        piscadas++;
+                    }
+                    olhoDireitoAberto = false;
+                }
+            }
         }
 
-        imshow("Pontos faciais", rostoComPontosFaciais);
+        imshow("Pontos faciais", imagemComPontosFaciais);
         waitKey(5);
     }
     else
     {
         cout << "Nenhum rosto detectado." << endl;
-    }
-}
-
-void demarcarRostoDetectado(Mat img, const Rect &regiao)
-{
-    cv::rectangle(img, regiao, Scalar(200, 0, 0));
-}
-
-void demarcarPontosFaciais(Mat img, const vector<Rect> &rostosDetectados, const vector<vector<Point2f>> &pontosFaciais)
-{
-    for (unsigned long i = 0; i < rostosDetectados.size(); i++)
-    {
-        for (auto &&ponto : pontosFaciais[i])
-        {
-            cv::circle(img, ponto, 2, cv::Scalar(0, 0, 0), FILLED);
-        }
-    }
-}
-
-void demarcarContornoOlhos(Mat img, const vector<vector<Point2f>> &pontosFaciais)
-{
-    //Pontos olhos esquerdo 36 39 41
-    //Pontos olhos direito  42 45 47
-    for (auto &&pontosDeUmaFace : pontosFaciais)
-    {
-        //Contorna olho esquerdo
-        for (int x = 36; x < 41; x++)
-        {
-            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x+1], cv::Scalar(200, 0, 0));
-        }
-        cv::line(img, pontosDeUmaFace[41], pontosDeUmaFace[36], cv::Scalar(200, 0, 0));
-
-        //Contorna olho direito
-        for (int x = 42; x < 47; x++)
-        {
-            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x+1], cv::Scalar(200, 0, 0));
-        }
-        cv::line(img, pontosDeUmaFace[42], pontosDeUmaFace[47], cv::Scalar(200, 0, 0));
     }
 }
