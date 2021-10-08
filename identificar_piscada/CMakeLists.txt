@@ -26,6 +26,7 @@ include_directories(
 add_executable(vc_identificar_piscada
     main.cpp
     utils.cpp
+    detectar_olhos.cpp
     detectar_rosto.cpp
     piscadas_facemark_lbf.cpp
     piscadas_facemark_aam.cpp

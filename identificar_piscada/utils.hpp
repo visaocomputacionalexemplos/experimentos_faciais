@@ -20,4 +20,6 @@ void tracejarRegiaoInteresse(cv::Mat img, const std::vector<std::vector<cv::Poin
 void escreverDimensoesOlhos(cv::Mat img, const cv::Rect &rostoDetectado, const olhoDimencoes &olhoEsquerdo, const olhoDimencoes &olhoDireito);
 void escreverQtdPiscadas(cv::Mat img, const int &piscadas);
 
+bool getInitialFitting(cv::Mat image, cv::Rect face, std::vector<cv::Point2f> s0, cv::CascadeClassifier eyes_cascade, cv::Mat & R, cv::Point2f & Trans, float & scale);
+
 #endif //UTILS_H

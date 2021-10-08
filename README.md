@@ -1,4 +1,4 @@
-# Experimentos Faciais
+# Visão computacional - Experimentos Faciais
 
 Exemplos e testes realizados com bibliotecas faciais
 
