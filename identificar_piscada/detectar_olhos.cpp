@@ -2,7 +2,7 @@
 
 using namespace cv;
 
-Ptr<CascadeClassifier> initSimpleEyeDetector() {
+Ptr<CascadeClassifier> iniciarDetectorOlhos() {
     Ptr<CascadeClassifier> faceDetector = new CascadeClassifier;
     faceDetector->load("../../extra/haarcascade_eye.xml");
 

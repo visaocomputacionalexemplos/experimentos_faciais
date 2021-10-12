@@ -1,128 +1,6 @@
-/*#include <stdio.h>
-#include <fstream>
-#include <sstream>
-#include "opencv2/core.hpp"
-#include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/face.hpp"
-#include <opencv2/opencv.hpp>
+//http://dlib.net/face_landmark_detection_ex.cpp.html
+//https://github.com/davisking/dlib-models
 
-#include <iostream>
-#include <string>
-#include <ctime>
-
-using namespace std;
-using namespace cv;
-using namespace cv::face;
-
-bool myDetector( InputArray image, OutputArray ROIs, CascadeClassifier *face_cascade);
-bool getInitialFitting(Mat image, Rect face, std::vector<Point2f> s0,
-    CascadeClassifier eyes_cascade, Mat & R, Point2f & Trans, float & scale);
-bool parseArguments(int argc, char** argv, String & cascade,
-    String & model, String & images, String & annotations, String & testImages
-);
-
-int main(int argc, char** argv )
-{
-    FacemarkAAM::Params params;
-    params.scales.clear();
-    params.scales.push_back(2);
-    params.scales.push_back(4);
-    Ptr<FacemarkAAM> facemark = FacemarkAAM::create(params);
-    facemark->loadModel("../../extra/aam_model.yaml");
-        
-    VideoCapture cap(0);
-    if (!cap.isOpened())
-    {
-        cout << "Video Capture Fail" << endl;
-        return 1;
-    }
-
-    Mat image;
-    cap >> image;
-
-                printf("0\n");
-    //Calcula a escala e coleta a quantidade de linhas para uma imagem de 640 cols
-
-    //! [trainsformation_variables]
-    float scale ;
-    Point2f T;
-    Mat R;
-    //! [trainsformation_variables]
-
-                printf("1\n");
-    //! [base_shape]
-    FacemarkAAM::Data data;
-    facemark->getData(&data);
-    std::vector<Point2f> s0 = data.s0;
-    //! [base_shape]
-
-                printf("2\n");
-    //! [fitting]
-    //fitting process
-    std::vector<Rect> faces;
-    //! [load_cascade_models]
-    CascadeClassifier face_cascade("../../extra/haarcascade_frontalface_alt2.xml");
-                printf("3\n");
-    CascadeClassifier eyes_cascade("../../extra/haarcascade_eye.xml");
-    //! [load_cascade_models]
-                printf("4\n");
-    for(;;){
-        cap >> image;
-    auto showSize = Size(320, ((float)320 / image.cols) * image.rows);
-        resize(image, image, showSize, 0, 0, INTER_LINEAR_EXACT);
-        imshow("image", image);
-        waitKey(5);
-        //! [detect_face]
-        myDetector(image, faces, &face_cascade);
-                printf("4.5\n");
-        //! [detect_face]
-        if(faces.size()>0){
-            
-            std::vector<FacemarkAAM::Config> conf;
-            std::vector<Rect> faces_eyes;
-            for(unsigned j=0;j<faces.size();j++){
-                if(getInitialFitting(image,faces[j],s0,eyes_cascade, R,T,scale)){
-                    conf.push_back(FacemarkAAM::Config(R,T,scale,(int)params.scales.size()-1));
-                    faces_eyes.push_back(faces[j]);
-                }
-            }
-            
-            if(conf.size()>0){
-                printf(" - face with eyes found %i", (int)conf.size());
-                std::vector<std::vector<Point2f> > landmarks;
-                facemark->fitConfig(image, faces_eyes, landmarks, conf);
-                for(unsigned j=0;j<landmarks.size();j++){
-                    drawFacemarks(image, landmarks[j],Scalar(0,255,0));
-                }
-            }
-            imshow("fit", image);
-            
-        }
-
-    } 
-}
-
-bool myDetector(InputArray image, OutputArray faces, CascadeClassifier *face_cascade)
-{
-    Mat gray;
-
-    if (image.channels() > 1)
-        cvtColor(image, gray, COLOR_BGR2GRAY);
-    else
-        gray = image.getMat().clone();
-
-    equalizeHist(gray, gray);
-
-    std::vector<Rect> faces_;
-    face_cascade->detectMultiScale(gray, faces_, 1.4, 2, CASCADE_SCALE_IMAGE, Size(30, 30));
-    Mat(faces_).copyTo(faces);
-    return true;
-}
-
-*/
-
-//http://blog.dlib.net/2014/08/real-time-face-pose-estimation.html
 //FacemarkKazemi https://www.csc.kth.se/~vahidk/face_ert.html
 //FacemarkAAM: https://ibug.doc.ic.ac.uk/media/uploads/documents/tzimiro_pantic_iccv2013.pdf
 //FacemarkLBF: http://www.jiansun.org/papers/CVPR14_FaceAlignment.pdf
@@ -133,22 +11,18 @@ bool myDetector(InputArray image, OutputArray faces, CascadeClassifier *face_cas
 #include "utils.hpp"
 #include "detectar_rosto.hpp"
 #include "detectar_olhos.hpp"
-#include "piscadas_facemark_lbf.hpp"
-#include "piscadas_facemark_aam.hpp"
-#include "piscadas_facemark_kazemi.hpp"
+#include "detectar_pontos_faciais_lbf.hpp"
+#include "detectar_pontos_faciais_aam.hpp"
+#include "detectar_pontos_faciais_kazemi.hpp"
 
-using namespace cv;
-using namespace std;
-using namespace cv::face;
-
-Ptr<CascadeClassifier> faceDetector;
-Ptr<CascadeClassifier> eyeDetector;
-Ptr<Facemark> facemark;
+cv::Ptr<cv::CascadeClassifier> faceDetector;
+cv::Ptr<cv::CascadeClassifier> eyeDetector;
+cv::Ptr<cv::face::Facemark> facemark;
 bool fitEmTonsDeCinza;
 bool requerDetecaoDosOlhos;
 std::string tipo;
 
-void processar(Mat img);
+void coletarPontosFaciais(cv::Mat img);
 
 int main()
 {
@@ -165,74 +39,76 @@ int main()
         //LBF
         fitEmTonsDeCinza = true;
         requerDetecaoDosOlhos = false;
-        facemark = initFacemarkLBF();
+        facemark = iniciarDetectorPontosFacialLBF();
     }
     else if (tipo.compare("2") == 0)
     {
         //AAM
         fitEmTonsDeCinza = false;
         requerDetecaoDosOlhos = true;
-        facemark = initFacemarkAAM();   
+        facemark = iniciarDetectorPontosFacialAAM();
     }
     else if (tipo.compare("3") == 0)
     {
         //Kazemi
         fitEmTonsDeCinza = false;
         requerDetecaoDosOlhos = false;
-        facemark = initFacemarkKazemi();
+        facemark = iniciarDetectorPontosFacialKazemi();
     }
     else
     {
         std::cout << "Nenhum tipo informado." << std::endl;
     }
 
-    //Inicia detector de facial e de olhos por Haarcascade
-    faceDetector = initSimpleFaceDetector();
-    if (requerDetecaoDosOlhos) eyeDetector = initSimpleEyeDetector();
+    //Inicia detector facial e de olhos por Haarcascade
+    faceDetector = iniciarDetectorFacial();
+    if (requerDetecaoDosOlhos)
+        eyeDetector = iniciarDetectorOlhos();
 
     //Inicia captura dos vídeos
-    VideoCapture cap(0);
-    if (!cap.isOpened()) {
-        cout << "Video Capture Fail" << endl;
+    cv::VideoCapture cap(0);
+    if (!cap.isOpened())
+    {
+        std::cout << "Video Capture Fail" << std::endl;
         return 1;
     }
-    Mat img; cap >> img;
+    cv::Mat img;
+    cap >> img;
 
-    //Reescala a imagem para uma largura de 320 pixels
-    auto showSize = Size(480, ((float)480 / img.cols) * img.rows);
+    //Calcula nova dimensão da imagem para 480 pixels
+    auto showSize = cv::Size(480, ((float)480 / img.cols) * img.rows);
 
     for (;;)
     {
         //Coleta a imagem da camera
         cap >> img;
 
-        //Escala a imagem, converte para tons de cinza
-        resize(img, img, showSize, 0, 0, INTER_LINEAR_EXACT);
+        //Reescala a imagem para uma largura de 320 pixels
+        cv::resize(img, img, showSize, 0, 0, cv::INTER_LINEAR_EXACT);
 
-        processar(img);
-        imshow("Origem", img);
+        coletarPontosFaciais(img);
+        cv::imshow("Origem", img);
 
-        waitKey(5);
+        cv::waitKey(5);
     }
 }
 
-
-Mat imagemOriginalCinza;
+cv::Mat imagemOriginalCinza;
 const auto liminarOlhoFechado = 0.25;
 bool olhoEsquerdoAberto = false, olhoDireitoAberto = false, pontosDetectados = false;
 int piscadas = 0;
 
-void processar(Mat imagemOriginal)
+void coletarPontosFaciais(cv::Mat imagemOriginal)
 {
+    std::vector<cv::Rect> rostosDetectados;
     olhoDimencoes olhoEsquerdoDimencoes, olhoDireitoDimencoes;
-    vector<Rect> rostosDetectados;
-    vector<vector<Point2f>> pontosFaciais;
-    Mat imagemComPontosFaciais;
+    std::vector<std::vector<cv::Point2f>> pontosFaciais;
+    cv::Mat imagemComPontosFaciais;
 
     {
         //Converte em tons de cinza e equaliza a imagem
         //Detecção por haarcascade funcionam bem com imagens equalizadas
-        cvtColor(imagemOriginal, imagemOriginalCinza, COLOR_BGR2GRAY);
+        cvtColor(imagemOriginal, imagemOriginalCinza, cv::COLOR_BGR2GRAY);
         equalizeHist(imagemOriginalCinza, imagemOriginalCinza);
 
         //Detecta os rostos na imagem
@@ -242,19 +118,30 @@ void processar(Mat imagemOriginal)
     if (rostosDetectados.size() != 0)
     {
         imagemComPontosFaciais = imagemOriginal.clone();
+
+        //Demarca rosto na imagem original
         for (auto &&rostoDetec : rostosDetectados)
         {
             demarcarRostoDetectado(imagemOriginal, rostoDetec);
         }
 
-        if (requerDetecaoDosOlhos) {
-
-        } else {
+        if (requerDetecaoDosOlhos)
+        {
+            //Detecta os pontos faciais com código personalizado para o algorítmo AAM
+            pontosDetectados = facemarkAAMFit(static_cast<cv::face::FacemarkAAM *>(facemark.get()), eyeDetector,
+                           fitEmTonsDeCinza
+                               ? imagemOriginalCinza
+                               : imagemOriginal,
+                           rostosDetectados,
+                           pontosFaciais);
+        }
+        else
+        {
             //Detecta os pontos faciais
             pontosDetectados = facemark->fit(fitEmTonsDeCinza
-                              ? imagemOriginalCinza
-                              : imagemOriginal,
-                          rostosDetectados, pontosFaciais);
+                                                 ? imagemOriginalCinza
+                                                 : imagemOriginal,
+                                             rostosDetectados, pontosFaciais);
         }
 
         if (pontosDetectados)

@@ -3,6 +3,6 @@
 
 #include "opencv2/objdetect.hpp"
 
-cv::Ptr<cv::CascadeClassifier> initSimpleEyeDetector();
+cv::Ptr<cv::CascadeClassifier> iniciarDetectorOlhos();
 
 #endif //DETECTAR_OLHOS_H

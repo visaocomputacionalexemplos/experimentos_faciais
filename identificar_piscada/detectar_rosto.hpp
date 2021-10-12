@@ -3,6 +3,6 @@
 
 #include "opencv2/objdetect.hpp"
 
-cv::Ptr<cv::CascadeClassifier> initSimpleFaceDetector();
+cv::Ptr<cv::CascadeClassifier> iniciarDetectorFacial();
 
 #endif //DETECTAR_ROSTO_H

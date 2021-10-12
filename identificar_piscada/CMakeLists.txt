@@ -28,9 +28,9 @@ add_executable(vc_identificar_piscada
     utils.cpp
     detectar_olhos.cpp
     detectar_rosto.cpp
-    piscadas_facemark_lbf.cpp
-    piscadas_facemark_aam.cpp
-    piscadas_facemark_kazemi.cpp
+    detectar_pontos_faciais_lbf.cpp
+    detectar_pontos_faciais_aam.cpp
+    detectar_pontos_faciais_kazemi.cpp
 )
 
 #add ide libraries
