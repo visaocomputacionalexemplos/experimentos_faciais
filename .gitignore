@@ -1,0 +1,8 @@
+#models
+extra/*
+
+#visualstudio code
+.vscode
+
+#cmake
+build
