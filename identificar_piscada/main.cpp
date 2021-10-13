@@ -148,10 +148,11 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         {
             demarcarPontosFaciais(imagemComPontosFaciais, rostosDetectados, pontosFaciais);
             tracejarRegiaoInteresse(imagemComPontosFaciais, pontosFaciais);
-            demarcarContornoOlhos(imagemOriginal, pontosFaciais);
+            //demarcarContornoOlhos(imagemOriginal, pontosFaciais);
 
             for (unsigned long i = 0; i < rostosDetectados.size(); i++)
             {
+                break;
                 //Coleta as dimensões(largura, altura e proporção) dos olhos
                 std::tie(olhoEsquerdoDimencoes, olhoDireitoDimencoes) = coletarDimensoesOlhos(pontosFaciais[i]);
                 escreverDimensoesOlhos(imagemOriginal, rostosDetectados[i], olhoEsquerdoDimencoes, olhoDireitoDimencoes);
@@ -195,5 +196,5 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         }
     }
 
-    escreverQtdPiscadas(imagemOriginal, piscadas);
+    //escreverQtdPiscadas(imagemOriginal, piscadas);
 }
