@@ -1,5 +1,5 @@
-//http://dlib.net/face_landmark_detection_ex.cpp.html
-//https://github.com/davisking/dlib-models
+//http://visaocomputacional.com.br/deteccao-de-pontos-faciais-facemark-com-opencv-e-dlib/
+//https://github.com/visaocomputacionalexemplos/experimentos_faciais
 
 //FacemarkKazemi https://www.csc.kth.se/~vahidk/face_ert.html
 //FacemarkAAM: https://ibug.doc.ic.ac.uk/media/uploads/documents/tzimiro_pantic_iccv2013.pdf
@@ -15,9 +15,11 @@
 #include "detectar_pontos_faciais_aam.hpp"
 #include "detectar_pontos_faciais_kazemi.hpp"
 
+//Detectores
 cv::Ptr<cv::CascadeClassifier> faceDetector;
 cv::Ptr<cv::CascadeClassifier> eyeDetector;
 cv::Ptr<cv::face::Facemark> facemark;
+
 bool fitEmTonsDeCinza;
 bool requerDetecaoDosOlhos;
 std::string tipo;
@@ -66,7 +68,7 @@ int main()
         eyeDetector = iniciarDetectorOlhos();
 
     //Inicia captura dos vídeos
-    cv::VideoCapture cap(0);
+    cv::VideoCapture cap(2);
     if (!cap.isOpened())
     {
         std::cout << "Video Capture Fail" << std::endl;

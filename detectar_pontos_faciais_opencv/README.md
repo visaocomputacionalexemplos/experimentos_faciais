@@ -1,8 +1,8 @@
 # Experimentos Biblioteca OpenCV
 
-Projeto com testes de detecção de piscadas por meio de pontos faciais.
+Projeto com testes de detecção de pontos faciais.
 
-As detecções dos pontos faciais são realizados com 3 algoritmos diferentes:
+As detecções dos pontos faciais foram realizados com seguintes algoritmos:
 * Opencv com FacemarkAMM;
 * Opencv com FacemarkKazemi;
 * Opencv com FacemarkLBF.
