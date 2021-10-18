@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 message("Compilando experimentos")
 
-project(vc_identificar_piscada VERSION 1.0.0 DESCRIPTION "VisaoComputacionalExperimentos")
+project(vc_detectar_pontos_faciais_opencv VERSION 1.0.0 DESCRIPTION "VisaoComputacionalExperimentos")
 
 #c++11flags
 if (CMAKE_VERSION VERSION_LESS "3.1")
@@ -23,7 +23,7 @@ include_directories(
 
 
 #file to builder
-add_executable(vc_identificar_piscada
+add_executable(vc_detectar_pontos_faciais_opencv
     main.cpp
     utils.cpp
     detectar_olhos.cpp
@@ -34,7 +34,7 @@ add_executable(vc_identificar_piscada
 )
 
 #add ide libraries
-target_link_libraries(vc_identificar_piscada
+target_link_libraries(vc_detectar_pontos_faciais_opencv
     opencv_core
     opencv_imgproc
     opencv_videoio
@@ -42,4 +42,4 @@ target_link_libraries(vc_identificar_piscada
     opencv_objdetect
     opencv_face)
 
-install(TARGETS vc_identificar_piscada)
+install(TARGETS vc_detectar_pontos_faciais_opencv)

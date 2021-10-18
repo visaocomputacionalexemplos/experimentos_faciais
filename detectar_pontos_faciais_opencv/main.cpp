@@ -68,7 +68,7 @@ int main()
         eyeDetector = iniciarDetectorOlhos();
 
     //Inicia captura dos vídeos
-    cv::VideoCapture cap(2);
+    cv::VideoCapture cap(0);
     if (!cap.isOpened())
     {
         std::cout << "Video Capture Fail" << std::endl;

@@ -1,6 +1,10 @@
 //https://learnopencv.com/face-detection-opencv-dlib-and-deep-learning-c-python/
 //Exemplo disponibilizado pela DLib: http://dlib.net/face_landmark_detection_ex.cpp.html
 
+#include <opencv2/videoio.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+#include <dlib/opencv.h>
 #include <dlib/image_processing/frontal_face_detector.h>
 #include <dlib/image_processing/render_face_detections.h>
 #include <dlib/image_processing.h>
@@ -8,87 +12,80 @@
 #include <dlib/image_io.h>
 #include <iostream>
 
-using namespace dlib;
+#include "detectar_pontos_faciais_sp.hpp"
+
 using namespace std;
 
+void coletarPontosFaciais(const dlib::array2d<dlib::rgb_pixel>& img);
+
 // ----------------------------------------------------------------------------------------
+dlib::frontal_face_detector detector;
+dlib::shape_predictor sp;
 
-int main(int argc, char** argv)
-{  
-    try
+int main(int argc, char **argv)
+{
+    // Inicia Detector faciauk
+    detector = dlib::get_frontal_face_detector();
+
+    //Carrega o modelo treinado do shape predictor
+    iniciarDetectorPontosFacialSP(sp);
+
+    //Inicia captura dos vídeos
+    cv::VideoCapture cap(0);
+    if (!cap.isOpened())
     {
-        // This example takes in a shape model file and then a list of images to
-        // process.  We will take these filenames in as command line arguments.
-        // Dlib comes with example images in the examples/faces folder so give
-        // those as arguments to this program.
-        if (argc == 1)
-        {
-            cout << "Call this program like this:" << endl;
-            cout << "./face_landmark_detection_ex shape_predictor_68_face_landmarks.dat faces/*.jpg" << endl;
-            cout << "\nYou can get the shape_predictor_68_face_landmarks.dat file from:\n";
-            cout << "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2" << endl;
-            return 0;
-        }
-
-        // We need a face detector.  We will use this to get bounding boxes for
-        // each face in an image.
-        frontal_face_detector detector = get_frontal_face_detector();
-        // And we also need a shape_predictor.  This is the tool that will predict face
-        // landmark positions given an image and face bounding box.  Here we are just
-        // loading the model from the shape_predictor_68_face_landmarks.dat file you gave
-        // as a command line argument.
-        shape_predictor sp;
-        deserialize(argv[1]) >> sp;
-
-
-        image_window win, win_faces;
-        // Loop over all the images provided on the command line.
-        for (int i = 2; i < argc; ++i)
-        {
-            cout << "processing image " << argv[i] << endl;
-            array2d<rgb_pixel> img;
-            load_image(img, argv[i]);
-            // Make the image larger so we can detect small faces.
-            pyramid_up(img);
-
-            // Now tell the face detector to give us a list of bounding boxes
-            // around all the faces in the image.
-            std::vector<rectangle> dets = detector(img);
-            cout << "Number of faces detected: " << dets.size() << endl;
-
-            // Now we will go ask the shape_predictor to tell us the pose of
-            // each face we detected.
-            std::vector<full_object_detection> shapes;
-            for (unsigned long j = 0; j < dets.size(); ++j)
-            {
-                full_object_detection shape = sp(img, dets[j]);
-                cout << "number of parts: "<< shape.num_parts() << endl;
-                cout << "pixel position of first part:  " << shape.part(0) << endl;
-                cout << "pixel position of second part: " << shape.part(1) << endl;
-                // You get the idea, you can get all the face part locations if
-                // you want them.  Here we just store them in shapes so we can
-                // put them on the screen.
-                shapes.push_back(shape);
-            }
-
-            // Now let's view our face poses on the screen.
-            win.clear_overlay();
-            win.set_image(img);
-            win.add_overlay(render_face_detections(shapes));
-
-            // We can also extract copies of each face that are cropped, rotated upright,
-            // and scaled to a standard size as shown here:
-            dlib::array<array2d<rgb_pixel> > face_chips;
-            extract_image_chips(img, get_face_chip_details(shapes), face_chips);
-            win_faces.set_image(tile_images(face_chips));
-
-            cout << "Hit enter to process the next image..." << endl;
-            cin.get();
-        }
+        std::cout << "Video Capture Fail" << std::endl;
+        return 1;
     }
-    catch (exception& e)
+    cv::Mat cam;
+    cap >> cam;
+
+    //Calcula nova dimensão da imagem para 320 pixels
+    auto showSize = cv::Size(320, ((float)320 / cam.cols) * cam.rows);
+
+    // Loop over all the images provided on the command line.
+    for (;;)
     {
-        cout << "\nexception thrown!" << endl;
-        cout << e.what() << endl;
+        //Coleta a imagem da camera
+        cap >> cam;
+        //Reescala a imagem para uma largura de 320 pixels
+        cv::resize(cam, cam, showSize, 0, 0, cv::INTER_LINEAR_EXACT);
+
+        //Atenção: img é apenas um invólucro pra img e não cria cópias das informações da variável "img"
+        dlib::array2d<dlib::rgb_pixel> img;
+        dlib::assign_image(img, dlib::cv_image<dlib::bgr_pixel>(cam));
+
+        coletarPontosFaciais(img);
+
+        cv::imshow("Origem", cam);
+        cv::waitKey(5);
     }
+}
+    
+dlib::image_window win, win_faces;
+std::vector<dlib::rectangle> rostosDetectados;
+
+void coletarPontosFaciais(const dlib::array2d<dlib::rgb_pixel>& imagemOriginal)
+{
+    //Detecta os pontos faciais e retorna a lista de rostos detectados
+    rostosDetectados = detector(imagemOriginal);
+    //cout << "Numero de rostos detectados: " << dets.size() << endl;
+
+    std::vector<dlib::full_object_detection> pontosFaciais;
+    for (unsigned long j = 0; j < rostosDetectados.size(); ++j)
+    {
+        //Coleta os pontos faciais de um único rosto
+        dlib::full_object_detection shape = sp(imagemOriginal, rostosDetectados[j]);
+        pontosFaciais.push_back(shape);
+    }
+
+    // Exibe a imagem com o contorno dos pontos.
+    win.clear_overlay();
+    win.set_image(imagemOriginal);
+    win.add_overlay(render_face_detections(pontosFaciais));
+
+    // Recorta o rosto da imagem original
+    dlib::array<dlib::array2d<dlib::rgb_pixel>> rostosRecortados;
+    extract_image_chips(imagemOriginal, get_face_chip_details(pontosFaciais), rostosRecortados);
+    win_faces.set_image(tile_images(rostosRecortados));
 }

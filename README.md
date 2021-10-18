@@ -14,11 +14,6 @@ Você pode copiá-lo, modificá-lo, redistribuí-lo ou utilizá-lo para fins com
 
 # Licença Modelos Treinados
 
-Todos os modelos de dados treinados e utilizados neste projeto estão sob licença BSD e é vetado o uso para fins comerciais.
-Ao baixar, copiar, instalar ou usar estes modelos, você concorda com esta licença.
-Se você não concorda com esta licença, não baixe, instale, copie ou use o software.
+Todos os modelos de dados treinados e utilizados neste projeto possuem licenças específicas, 
+consulte o "README.md" da pasta extras, para maiores informações.
 
-
-                          License Agreement
-                       For Open  Trained Models
-                        (3-clause BSD License)
