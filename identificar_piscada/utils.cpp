@@ -126,17 +126,39 @@ bool getInitialFitting(Mat image, Rect face, std::vector<Point2f> s0, Ptr<Cascad
 
 void demarcarRostoDetectado(Mat img, const Rect &regiao)
 {
-    cv::rectangle(img, regiao, Scalar(10, 50, 250));
+    cv::rectangle(img, regiao, Scalar(23, 205, 255));
 }
 
 void demarcarPontosFaciais(Mat img, const vector<Rect> &rostosDetectados, const vector<vector<Point2f>> &pontosFaciais)
 {
-    for (unsigned long i = 0; i < rostosDetectados.size(); i++)
+    //Pontos rosto 0 16
+    //Pontos sobrancelha esq 17 21
+    //Pontos sobrancelha dir 22 26
+    //Pontos nariz 27 35
+    //Pontos boca ext 48 59
+    //Pontos boca int 60 67
+
+    cv::Scalar cor(23, 205, 255);
+
+    demarcarContornoOlhos(img, pontosFaciais);
+
+    for (auto &&pontosDeUmaFace : pontosFaciais)
     {
-        for (auto &&ponto : pontosFaciais[i])
-        {
-            cv::circle(img, ponto, 2, cv::Scalar(50, 0, 250), FILLED);
-        }
+        //Contorna rosto
+        for (int x = 0; x < 16; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        //Contorna sobrancelha esq
+        for (int x = 17; x < 21; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        //Contorna sobrancelha dir
+        for (int x = 22; x < 26; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        //Contorna nariz
+        for (int x = 27; x < 30; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        for (int x = 31; x < 35; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        //Contorna boca ext
+        for (int x = 48; x < 59; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        cv::line(img, pontosDeUmaFace[59], pontosDeUmaFace[48], cor);
+        //Contorna boca int
+        for (int x = 60; x < 67; x++) cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
+        cv::line(img, pontosDeUmaFace[67], pontosDeUmaFace[60], cor);
     }
 }
 
@@ -144,41 +166,23 @@ void demarcarContornoOlhos(Mat img, const vector<vector<Point2f>> &pontosFaciais
 {
     //Pontos olhos esquerdo 36 37 38 39 40 41
     //Pontos olhos direito  42 43 44 45 46 47
+
+    cv::Scalar cor(23, 205, 255);
     for (auto &&pontosDeUmaFace : pontosFaciais)
     {
         //Contorna olho esquerdo
         for (int x = 36; x < 41; x++)
         {
-            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cv::Scalar(10, 50, 250));
+            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
         }
-        cv::line(img, pontosDeUmaFace[41], pontosDeUmaFace[36], cv::Scalar(10, 50, 250));
+        cv::line(img, pontosDeUmaFace[41], pontosDeUmaFace[36], cor);
 
         //Contorna olho direito
         for (int x = 42; x < 47; x++)
         {
-            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cv::Scalar(10, 50, 250));
+            cv::line(img, pontosDeUmaFace[x], pontosDeUmaFace[x + 1], cor);
         }
-        cv::line(img, pontosDeUmaFace[42], pontosDeUmaFace[47], cv::Scalar(10, 50, 250));
-    }
-}
-void tracejarRegiaoInteresse(Mat img, const vector<vector<Point2f>> &pontosFaciais)
-{
-    Point2f meioSuperior, meioInferior;
-    //Pontos olhos esquerdo 36 37 38 39 40 41
-    //Pontos olhos direito  42 43 44 45 46 47
-    for (auto &&pontosDeUmaFace : pontosFaciais)
-    {
-        //Linhas olho esquerdo
-        cv::line(img, pontosDeUmaFace[36], pontosDeUmaFace[39], cv::Scalar(50, 0, 250));
-        meioSuperior = Point2f((pontosDeUmaFace[37].x + pontosDeUmaFace[38].x) / 2, (pontosDeUmaFace[37].y + pontosDeUmaFace[38].y) / 2);
-        meioInferior = Point2f((pontosDeUmaFace[40].x + pontosDeUmaFace[41].x) / 2, (pontosDeUmaFace[40].y + pontosDeUmaFace[41].y) / 2);
-        cv::line(img, meioSuperior, meioInferior, cv::Scalar(50, 0, 250));
-
-        //Linhas olho direito
-        cv::line(img, pontosDeUmaFace[42], pontosDeUmaFace[45], cv::Scalar(50, 0, 250));
-        meioSuperior = Point2f((pontosDeUmaFace[43].x + pontosDeUmaFace[44].x) / 2, (pontosDeUmaFace[43].y + pontosDeUmaFace[44].y) / 2);
-        meioInferior = Point2f((pontosDeUmaFace[46].x + pontosDeUmaFace[47].x) / 2, (pontosDeUmaFace[46].y + pontosDeUmaFace[47].y) / 2);
-        cv::line(img, meioSuperior, meioInferior, cv::Scalar(50, 0, 250));
+        cv::line(img, pontosDeUmaFace[42], pontosDeUmaFace[47], cor);
     }
 }
 

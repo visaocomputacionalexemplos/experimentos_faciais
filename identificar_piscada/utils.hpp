@@ -16,7 +16,6 @@ std::tuple<::olhoDimencoes, ::olhoDimencoes> coletarDimensoesOlhos(const std::ve
 void demarcarRostoDetectado(cv::Mat img, const cv::Rect &regiao);
 void demarcarPontosFaciais(cv::Mat img, const std::vector<cv::Rect> &rostosDetectados, const std::vector<std::vector<cv::Point2f>> &pontosFaciais);
 void demarcarContornoOlhos(cv::Mat img, const std::vector<std::vector<cv::Point2f>> &pontosFaciais);
-void tracejarRegiaoInteresse(cv::Mat img, const std::vector<std::vector<cv::Point2f>> &pontosFaciais);
 void escreverDimensoesOlhos(cv::Mat img, const cv::Rect &rostoDetectado, const olhoDimencoes &olhoEsquerdo, const olhoDimencoes &olhoDireito);
 void escreverQtdPiscadas(cv::Mat img, const int &piscadas);
 

@@ -12,9 +12,9 @@ void dlibHOGDetectMultiScale(
     dlib::array2d<dlib::rgb_pixel>& imagem,
     std::vector<cv::Rect> &rostos);
 
-void shapePradictorDetectMultiScale(
+bool shapePradictorDetectMultiScale(
         dlib::shape_predictor &detector,
-        dlib::array2d<dlib::rgb_pixel>& imagem,
+        const dlib::array2d<dlib::rgb_pixel>& imagem,
         std::vector<cv::Rect> &rostos,
         std::vector<std::vector<cv::Point2f>> &pontosFaciais);
 

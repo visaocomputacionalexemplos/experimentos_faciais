@@ -2,8 +2,6 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include "opencv2/highgui.hpp"
 #include <dlib/image_processing/frontal_face_detector.h>
-#include <dlib/image_processing/render_face_detections.h>
-#include <dlib/image_processing.h>
 #include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 #include <dlib/opencv.h>
@@ -101,7 +99,8 @@ int main()
 
 dlib::array2d<dlib::rgb_pixel> imagemOriginalDlib;
 cv::Mat imagemOriginalCinza;
-const auto liminarOlhoFechado = 0.25;
+const auto liminarOlhoFechado = 0.24;
+const auto liminarOlhoAberto = 0.26;
 bool olhoEsquerdoAberto = false, olhoDireitoAberto = false, pontosDetectados = false;
 int piscadas = 0;
 
@@ -147,7 +146,7 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         //Detecta os pontos faciais
         if (detectarPontosComDlib)
         {
-            shapePradictorDetectMultiScale(facemarkDlib, imagemOriginalDlib, rostosDetectados, pontosFaciais);
+            pontosDetectados = shapePradictorDetectMultiScale(facemarkDlib, imagemOriginalDlib, rostosDetectados, pontosFaciais);
         }
         else
         {
@@ -157,8 +156,6 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         if (pontosDetectados)
         {
             demarcarPontosFaciais(imagemComPontosFaciais, rostosDetectados, pontosFaciais);
-            tracejarRegiaoInteresse(imagemComPontosFaciais, pontosFaciais);
-            demarcarContornoOlhos(imagemOriginal, pontosFaciais);
 
             for (unsigned long i = 0; i < rostosDetectados.size(); i++)
             {
@@ -167,12 +164,12 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
                 escreverDimensoesOlhos(imagemOriginal, rostosDetectados[i], olhoEsquerdoDimencoes, olhoDireitoDimencoes);
 
                 //Olho direito esta aberto?
-                if (olhoEsquerdoDimencoes.proporcao > liminarOlhoFechado)
+                if (olhoEsquerdoDimencoes.proporcao > liminarOlhoAberto)
                 {
                     //Registra que olho esta aberto
                     olhoEsquerdoAberto = true;
                 }
-                else
+                else if (olhoEsquerdoDimencoes.proporcao < liminarOlhoFechado)
                 {
                     //Verifica se último registro é de olho aberto
                     if (olhoEsquerdoAberto)
