@@ -15,6 +15,7 @@ endif ()
 
 #dependencies
 find_package(OpenCV REQUIRED)
+find_package(dlib REQUIRED)
 
 #includes
 include_directories(
@@ -26,15 +27,14 @@ include_directories(
 add_executable(vc_identificar_piscada
     main.cpp
     utils.cpp
-    detectar_olhos.cpp
     detectar_rosto.cpp
     detectar_pontos_faciais_lbf.cpp
-    detectar_pontos_faciais_aam.cpp
-    detectar_pontos_faciais_kazemi.cpp
+    detectar_pontos_faciais_sp.cpp
 )
 
 #add ide libraries
 target_link_libraries(vc_identificar_piscada
+    dlib::dlib
     opencv_core
     opencv_imgproc
     opencv_videoio

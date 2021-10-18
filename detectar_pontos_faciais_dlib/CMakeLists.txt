@@ -26,7 +26,8 @@ include_directories(
 #file to builder
 add_executable(vc_detectar_pontos_faciais_dlib
     main.cpp
-    detectar_pontos_faciais_sp.cpp
+    detectar_rosto.cpp
+    detectar_pontos_faciais_aam.cpp
 )
 
 #add ide libraries

@@ -1,69 +1,75 @@
-//http://dlib.net/face_landmark_detection_ex.cpp.html
-//https://github.com/davisking/dlib-models
-
-//FacemarkKazemi https://www.csc.kth.se/~vahidk/face_ert.html
-//FacemarkAAM: https://ibug.doc.ic.ac.uk/media/uploads/documents/tzimiro_pantic_iccv2013.pdf
-//FacemarkLBF: http://www.jiansun.org/papers/CVPR14_FaceAlignment.pdf
-
-#include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+#include "opencv2/imgproc/imgproc.hpp"
+#include "opencv2/highgui.hpp"
+#include <dlib/image_processing/frontal_face_detector.h>
+#include <dlib/image_processing/render_face_detections.h>
+#include <dlib/image_processing.h>
+#include <dlib/gui_widgets.h>
+#include <dlib/image_io.h>
+#include <dlib/opencv.h>
 #include <iostream>
 
 #include "utils.hpp"
 #include "detectar_rosto.hpp"
-#include "detectar_olhos.hpp"
 #include "detectar_pontos_faciais_lbf.hpp"
-#include "detectar_pontos_faciais_aam.hpp"
-#include "detectar_pontos_faciais_kazemi.hpp"
+#include "detectar_pontos_faciais_sp.hpp"
 
-cv::Ptr<cv::CascadeClassifier> faceDetector;
-cv::Ptr<cv::CascadeClassifier> eyeDetector;
-cv::Ptr<cv::face::Facemark> facemark;
-bool fitEmTonsDeCinza;
-bool requerDetecaoDosOlhos;
+dlib::frontal_face_detector faceDetectorDlib;
+dlib::shape_predictor facemarkDlib;
+cv::Ptr<cv::CascadeClassifier> faceDetectorOpenCV;
+cv::Ptr<cv::face::Facemark> facemarkOpenCV;
+
+bool detectarRostosComDlib;
+bool detectarPontosComDlib;
+
 std::string tipo;
 
 void coletarPontosFaciais(cv::Mat img);
 
 int main()
 {
-    std::cout << "Informe o tipo de detector por pontos faciais que você deseja testar:" << std::endl
-              << " 1: LBF" << std::endl
-              << " 2: AAM" << std::endl
-              << " 3: Kazemi" << std::endl;
-
+    std::cout << "Detector Facial: Informe o tipo de detector de rostos que você deseja testar:" << std::endl
+              << " 1: OpenCV - Haarscascade" << std::endl
+              << " 2: DLIB - HoG Face Detector" << std::endl;
     std::cin >> tipo;
-
     //Inicia marcados de pontos faciais
     if (tipo.compare("1") == 0)
-    {
-        //LBF
-        fitEmTonsDeCinza = true;
-        requerDetecaoDosOlhos = false;
-        facemark = iniciarDetectorPontosFacialLBF();
-    }
+        detectarRostosComDlib = false; //Opencv LBF
     else if (tipo.compare("2") == 0)
-    {
-        //AAM
-        fitEmTonsDeCinza = false;
-        requerDetecaoDosOlhos = true;
-        facemark = iniciarDetectorPontosFacialAAM();
-    }
-    else if (tipo.compare("3") == 0)
-    {
-        //Kazemi
-        fitEmTonsDeCinza = false;
-        requerDetecaoDosOlhos = false;
-        facemark = iniciarDetectorPontosFacialKazemi();
-    }
+        detectarRostosComDlib = true; //DLIB - Shape Predict
     else
     {
         std::cout << "Nenhum tipo informado." << std::endl;
+        return 1;
+    }
+
+    std::cout << "Detector Pontos Faciais: Informe o tipo de detector por pontos faciais que você deseja testar:" << std::endl
+              << " 1: OpenCV - LBF" << std::endl
+              << " 2: DLIB - Shape Predict" << std::endl;
+    std::cin >> tipo;
+    //Inicia marcados de pontos faciais
+    if (tipo.compare("1") == 0)
+        detectarPontosComDlib = false; //Opencv LBF
+    else if (tipo.compare("2") == 0)
+        detectarPontosComDlib = true; //DLIB - Shape Predict
+    else
+    {
+        std::cout << "Nenhum tipo informado." << std::endl;
+        return 1;
     }
 
     //Inicia detector facial e de olhos por Haarcascade
-    faceDetector = iniciarDetectorFacial();
-    if (requerDetecaoDosOlhos)
-        eyeDetector = iniciarDetectorOlhos();
+    if (detectarRostosComDlib)
+        faceDetectorDlib = dlib::get_frontal_face_detector();
+    else
+        faceDetectorOpenCV = iniciarDetectorFacial();
+
+    if (detectarPontosComDlib)
+        //Carrega o modelo treinado do dlib shape predictor
+        iniciarDetectorPontosFacialSP(facemarkDlib);
+    else
+        //Carrega o modelo treinado para o opencv lbf
+        facemarkOpenCV = iniciarDetectorPontosFacialLBF();
 
     //Inicia captura dos vídeos
     cv::VideoCapture cap(0);
@@ -93,6 +99,7 @@ int main()
     }
 }
 
+dlib::array2d<dlib::rgb_pixel> imagemOriginalDlib;
 cv::Mat imagemOriginalCinza;
 const auto liminarOlhoFechado = 0.25;
 bool olhoEsquerdoAberto = false, olhoDireitoAberto = false, pontosDetectados = false;
@@ -105,6 +112,11 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
     std::vector<std::vector<cv::Point2f>> pontosFaciais;
     cv::Mat imagemComPontosFaciais;
 
+    if (detectarRostosComDlib || detectarPontosComDlib) {
+        //Converte a imagem do opencv na dlib
+        dlib::assign_image(imagemOriginalDlib, dlib::cv_image<dlib::bgr_pixel>(imagemOriginal));
+    }
+
     {
         //Converte em tons de cinza e equaliza a imagem
         //Detecção por haarcascade funcionam bem com imagens equalizadas
@@ -112,7 +124,14 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         equalizeHist(imagemOriginalCinza, imagemOriginalCinza);
 
         //Detecta os rostos na imagem
-        faceDetector->detectMultiScale(imagemOriginal, rostosDetectados);
+        if (detectarRostosComDlib)
+        {
+            dlibHOGDetectMultiScale(faceDetectorDlib, imagemOriginalDlib, rostosDetectados);
+        }
+        else
+        {
+            faceDetectorOpenCV->detectMultiScale(imagemOriginal, rostosDetectados);
+        }
     }
 
     if (rostosDetectados.size() != 0)
@@ -125,23 +144,14 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
             demarcarRostoDetectado(imagemOriginal, rostoDetec);
         }
 
-        if (requerDetecaoDosOlhos)
+        //Detecta os pontos faciais
+        if (detectarPontosComDlib)
         {
-            //Detecta os pontos faciais com código personalizado para o algorítmo AAM
-            pontosDetectados = facemarkAAMFit(static_cast<cv::face::FacemarkAAM *>(facemark.get()), eyeDetector,
-                           fitEmTonsDeCinza
-                               ? imagemOriginalCinza
-                               : imagemOriginal,
-                           rostosDetectados,
-                           pontosFaciais);
+            shapePradictorDetectMultiScale(facemarkDlib, imagemOriginalDlib, rostosDetectados, pontosFaciais);
         }
         else
         {
-            //Detecta os pontos faciais
-            pontosDetectados = facemark->fit(fitEmTonsDeCinza
-                                                 ? imagemOriginalCinza
-                                                 : imagemOriginal,
-                                             rostosDetectados, pontosFaciais);
+            pontosDetectados = facemarkOpenCV->fit(imagemOriginal, rostosDetectados, pontosFaciais);
         }
 
         if (pontosDetectados)

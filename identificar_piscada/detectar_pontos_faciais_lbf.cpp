@@ -4,8 +4,8 @@ using namespace cv;
 using namespace cv::face;
 
 Ptr<Facemark> iniciarDetectorPontosFacialLBF() {
-    Ptr<Facemark> facemark = FacemarkLBF::create();
-    facemark->loadModel("../../extra/lbfmodel.yaml");
+    Ptr<Facemark> facemarkOpenCV = FacemarkLBF::create();
+    facemarkOpenCV->loadModel("../../extra/lbfmodel.yaml");
 
-    return facemark;
+    return facemarkOpenCV;
 }
