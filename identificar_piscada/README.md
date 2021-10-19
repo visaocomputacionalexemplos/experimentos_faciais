@@ -3,9 +3,10 @@
 Projeto com testes de detecção de piscadas por meio de pontos faciais.
 
 As detecções dos pontos faciais são realizados com 3 algoritmos diferentes:
-* Opencv com FacemarkAMM;
-* Opencv com FacemarkKazemi;
-* Opencv com FacemarkLBF.
+* Dlib - HoG Face Detector;
+* DLIB - Shape Predictor;
+* OpenCV - Haarscascade;
+* Opencv - FacemarkLBF.
 
 
-Hashtags: #OpenCV #Facemark, #AMM, #Kazemi, #LBF
+Hashtags: #OpenCV #Dlib #Facemark

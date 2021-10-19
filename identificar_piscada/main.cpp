@@ -28,7 +28,7 @@ int main()
 {
     std::cout << "Detector Facial: Informe o tipo de detector de rostos que você deseja testar:" << std::endl
               << " 1: OpenCV - Haarscascade" << std::endl
-              << " 2: DLIB - HoG Face Detector" << std::endl;
+              << " 2: Dlib - HoG Face Detector" << std::endl;
     std::cin >> tipo;
     //Inicia marcados de pontos faciais
     if (tipo.compare("1") == 0)
@@ -43,7 +43,7 @@ int main()
 
     std::cout << "Detector Pontos Faciais: Informe o tipo de detector por pontos faciais que você deseja testar:" << std::endl
               << " 1: OpenCV - LBF" << std::endl
-              << " 2: DLIB - Shape Predict" << std::endl;
+              << " 2: Dlib - Shape Predict" << std::endl;
     std::cin >> tipo;
     //Inicia marcados de pontos faciais
     if (tipo.compare("1") == 0)
