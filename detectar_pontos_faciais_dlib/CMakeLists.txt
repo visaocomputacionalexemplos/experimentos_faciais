@@ -26,14 +26,14 @@ include_directories(
 #file to builder
 add_executable(vc_detectar_pontos_faciais_dlib
     main.cpp
-    detectar_rosto.cpp
-    detectar_pontos_faciais_aam.cpp
+    detectar_pontos_faciais_sp.cpp
 )
 
 #add ide libraries
 target_link_libraries(vc_detectar_pontos_faciais_dlib
     dlib::dlib
     opencv_core
+    opencv_imgproc
     opencv_videoio
     opencv_highgui)
 

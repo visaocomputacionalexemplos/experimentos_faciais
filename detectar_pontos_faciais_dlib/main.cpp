@@ -20,7 +20,7 @@ void coletarPontosFaciais(const dlib::array2d<dlib::rgb_pixel>& img);
 
 // ----------------------------------------------------------------------------------------
 dlib::frontal_face_detector detector;
-dlib::shape_predictor sp;
+dlib::shape_predictor shapePredictor;
 
 int main(int argc, char **argv)
 {
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
     detector = dlib::get_frontal_face_detector();
 
     //Carrega o modelo treinado do shape predictor
-    iniciarDetectorPontosFacialSP(sp);
+    iniciarDetectorPontosFacialSP(shapePredictor);
 
     //Inicia captura dos vídeos
     cv::VideoCapture cap(0);
@@ -71,11 +71,12 @@ void coletarPontosFaciais(const dlib::array2d<dlib::rgb_pixel>& imagemOriginal)
     rostosDetectados = detector(imagemOriginal);
     //cout << "Numero de rostos detectados: " << dets.size() << endl;
 
+    //Percorre os rostos detectados e coloca os pontos faciais
     std::vector<dlib::full_object_detection> pontosFaciais;
     for (unsigned long j = 0; j < rostosDetectados.size(); ++j)
     {
         //Coleta os pontos faciais de um único rosto
-        dlib::full_object_detection shape = sp(imagemOriginal, rostosDetectados[j]);
+        dlib::full_object_detection shape = shapePredictor(imagemOriginal, rostosDetectados[j]);
         pontosFaciais.push_back(shape);
     }
 
