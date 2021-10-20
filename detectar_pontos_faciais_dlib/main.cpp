@@ -32,6 +32,10 @@ int main(int argc, char **argv)
 
     //Inicia captura dos vídeos
     cv::VideoCapture cap(0);
+    //Para remover a quantidade de frames coletados por segundos
+    //Nem todas as câmeras suportam esta propriedade.
+    //cap.set(cv::CAP_PROP_FPS, 10);
+
     if (!cap.isOpened())
     {
         std::cout << "Video Capture Fail" << std::endl;
@@ -40,15 +44,15 @@ int main(int argc, char **argv)
     cv::Mat cam;
     cap >> cam;
 
-    //Calcula nova dimensão da imagem para 320 pixels
-    auto showSize = cv::Size(320, ((float)320 / cam.cols) * cam.rows);
+    //Calcula nova dimensão da imagem para 480 pixels
+    auto showSize = cv::Size(480, ((float)480 / cam.cols) * cam.rows);
 
     // Loop over all the images provided on the command line.
     for (;;)
     {
         //Coleta a imagem da camera
         cap >> cam;
-        //Reescala a imagem para uma largura de 320 pixels
+        //Reescala a imagem para uma largura de 480 pixels
         cv::resize(cam, cam, showSize, 0, 0, cv::INTER_LINEAR_EXACT);
 
         //Atenção: img é apenas um invólucro pra img e não cria cópias das informações da variável "img"

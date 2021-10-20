@@ -26,6 +26,10 @@ void coletarPontosFaciais(cv::Mat img);
 
 int main()
 {
+    //Coleta informações da GPU
+    //cv::cuda::printCudaDeviceInfo(0);
+    //std::cout << "cuda:" << cv::cuda::getCudaEnabledDeviceCount() << std::endl;
+
     std::cout << "Detector Facial: Informe o tipo de detector de rostos que você deseja testar:" << std::endl
               << " 1: OpenCV - Haarscascade" << std::endl
               << " 2: Dlib - HoG Face Detector" << std::endl;
@@ -70,7 +74,9 @@ int main()
         facemarkOpenCV = iniciarDetectorPontosFacialLBF();
 
     //Inicia captura dos vídeos
-    cv::VideoCapture cap(0);
+    cv::VideoCapture cap(2);
+    //cap.set(cv::CAP_PROP_FPS, 10);
+
     if (!cap.isOpened())
     {
         std::cout << "Video Capture Fail" << std::endl;
@@ -80,7 +86,7 @@ int main()
     cap >> img;
 
     //Calcula nova dimensão da imagem para 480 pixels
-    auto showSize = cv::Size(480, ((float)480 / img.cols) * img.rows);
+    auto showSize = cv::Size(640, ((float)640 / img.cols) * img.rows);
 
     for (;;)
     {
@@ -88,7 +94,7 @@ int main()
         cap >> img;
 
         //Reescala a imagem para uma largura de 320 pixels
-        cv::resize(img, img, showSize, 0, 0, cv::INTER_LINEAR_EXACT);
+        cv::resize(img, img, showSize);
 
         coletarPontosFaciais(img);
         cv::imshow("Origem", img);
@@ -111,7 +117,8 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
     std::vector<std::vector<cv::Point2f>> pontosFaciais;
     cv::Mat imagemComPontosFaciais;
 
-    if (detectarRostosComDlib || detectarPontosComDlib) {
+    if (detectarRostosComDlib || detectarPontosComDlib)
+    {
         //Converte a imagem do opencv na dlib
         dlib::assign_image(imagemOriginalDlib, dlib::cv_image<dlib::bgr_pixel>(imagemOriginal));
     }
@@ -133,9 +140,9 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
         }
     }
 
+    imagemComPontosFaciais = imagemOriginal.clone();
     if (rostosDetectados.size() != 0)
     {
-        imagemComPontosFaciais = imagemOriginal.clone();
 
         //Demarca rosto na imagem original
         for (auto &&rostoDetec : rostosDetectados)
@@ -197,10 +204,8 @@ void coletarPontosFaciais(cv::Mat imagemOriginal)
                     olhoDireitoAberto = false;
                 }
             }
-
-            imshow("Pontos faciais", imagemComPontosFaciais);
         }
     }
-
+    imshow("Pontos faciais", imagemComPontosFaciais);
     escreverQtdPiscadas(imagemOriginal, piscadas);
 }
